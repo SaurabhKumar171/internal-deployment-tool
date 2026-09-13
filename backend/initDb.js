@@ -4,15 +4,15 @@ require("dotenv").config();
 const { pool } = require("./db");
 
 async function initializeDatabase() {
-  const sql = await fs.readFile(path.join(__dirname, "init.sql"), "utf8");
+  const [schemaSql, migrationSql] = await Promise.all([
+    fs.readFile(path.join(__dirname, "init.sql"), "utf8"),
+    fs.readFile(path.join(__dirname, "migration.sql"), "utf8"),
+  ]);
 
-  await pool.query(sql);
-  await pool.query(
-    "INSERT INTO servers (name, ip_address, path) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT 1 FROM servers WHERE name = $1)",
-    ["demo-server", "192.0.2.10", "/var/www/demo-app"],
-  );
+  await pool.query(schemaSql);
+  await pool.query(migrationSql);
 
-  console.log("Database schema initialized and dummy server created");
+  console.log("Database schema initialized");
 }
 
 initializeDatabase()

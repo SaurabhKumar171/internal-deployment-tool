@@ -7,6 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "init-db": "node initDb.js",
+    "migrate": "node initDb.js",
     "worker": "node worker.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,9 +15,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
     "kafkajs": "^2.2.4",
     "pg": "^8.16.3",
     "redis": "^5.8.2",

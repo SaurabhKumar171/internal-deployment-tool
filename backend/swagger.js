@@ -9,9 +9,93 @@ const swaggerSpec = swaggerJSDoc({
       description: "API for creating and monitoring deployments.",
     },
     paths: {
+      "/api/v1/auth/register": {
+        post: {
+          summary: "Register a user",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["email", "password"],
+                  properties: {
+                    email: { type: "string", format: "email", example: "user@example.com" },
+                    password: { type: "string", format: "password" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            201: { description: "User registered" },
+            400: { description: "Missing required fields" },
+            409: { description: "Email is already registered" },
+            500: { description: "User registration failed" },
+          },
+        },
+      },
+      "/api/v1/auth/login": {
+        post: {
+          summary: "Log in and receive a JWT",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["email", "password"],
+                  properties: {
+                    email: { type: "string", format: "email", example: "user@example.com" },
+                    password: { type: "string", format: "password" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "JWT set in an HttpOnly token cookie",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      message: { type: "string", example: "Logged in successfully" },
+                    },
+                  },
+                },
+              },
+            },
+            400: { description: "Missing required fields" },
+            401: { description: "Invalid credentials" },
+            500: { description: "Login failed" },
+          },
+        },
+      },
+      "/api/v1/auth/logout": {
+        post: {
+          summary: "Log out and clear the JWT cookie",
+          responses: {
+            204: { description: "Logged out" },
+          },
+        },
+      },
+      "/api/v1/auth/me": {
+        get: {
+          summary: "Get the current user",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "Current user" },
+            401: { description: "Authentication required" },
+            404: { description: "User not found" },
+          },
+        },
+      },
       "/api/v1/servers": {
         post: {
           summary: "Create a server",
+          security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
             content: {
@@ -37,6 +121,7 @@ const swaggerSpec = swaggerJSDoc({
                     type: "object",
                     properties: {
                       id: { type: "string", format: "uuid" },
+                      user_id: { type: "string", format: "uuid" },
                       name: { type: "string" },
                       ip_address: { type: "string" },
                       path: { type: "string" },
@@ -51,6 +136,7 @@ const swaggerSpec = swaggerJSDoc({
         },
         get: {
           summary: "List servers",
+          security: [{ bearerAuth: [] }],
           responses: {
             200: {
               description: "Servers",
@@ -62,6 +148,7 @@ const swaggerSpec = swaggerJSDoc({
                       type: "object",
                       properties: {
                         id: { type: "string", format: "uuid" },
+                        user_id: { type: "string", format: "uuid" },
                         name: { type: "string" },
                         ip_address: { type: "string" },
                         path: { type: "string" },
@@ -78,6 +165,7 @@ const swaggerSpec = swaggerJSDoc({
       "/api/v1/deploy": {
         post: {
           summary: "Create a deployment",
+          security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
             content: {
@@ -115,6 +203,7 @@ const swaggerSpec = swaggerJSDoc({
       "/api/v1/deploy/{eventId}": {
         get: {
           summary: "Get deployment status",
+          security: [{ bearerAuth: [] }],
           parameters: [
             {
               name: "eventId",
@@ -142,6 +231,15 @@ const swaggerSpec = swaggerJSDoc({
             404: { description: "Deployment not found" },
             500: { description: "Deployment lookup failed" },
           },
+        },
+      },
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
         },
       },
     },
